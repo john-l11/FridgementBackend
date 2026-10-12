@@ -59,20 +59,49 @@ namespace FridgementBackend.Controllers
         {
             using var context = new AppDbContext();
 
-            context.Update<Product>(value);
-
-            context.SaveChanges();
+            try
+            {
+                context.Update<Product>(value);
+                context.SaveChanges();
+            } 
+            catch (Exception exp)
+            {
+                Console.WriteLine(exp.Message);
+                Console.WriteLine("An error has occured while updating a product");
+            }
         }
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
         public void Delete(string id)
         {
+            // create the database context
             using var context = new AppDbContext();
 
-            var product = context.Products.Find(id);
+            try
+            {
+                // search for the single item that you are going to remove from the database
+                var product = context.Products.Find(id);
 
-            context.Remove<Product>(product);
+                if (product != null)
+                {
+                    // perform the remove using the whole object from the database.
+                    context.Remove<Product>(product);
+                }
+                else
+                {
+                    throw new DbUpdateException("The product to delete was not found");
+                }
+                context.SaveChanges();
+            }
+            // for now just use a generalization of exceptions and then we can decide
+            // which one is the approriate exception
+            catch (Exception exp)
+            {
+                Console.WriteLine(exp.Message);
+                Console.WriteLine("An error has occured while trying to remove a product");
+            }
+            
         }
     }
 }
